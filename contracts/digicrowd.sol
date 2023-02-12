@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.9;
 
+//This contract deals with transfer of eth coins and not tokens!!!
 contract digicrowd {
     address public baseContract;
 
