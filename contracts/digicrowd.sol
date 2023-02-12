@@ -1,7 +1,16 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.9;
 
 contract digicrowd {
+    address public baseContract;
+
+    //Executes when deployed
+    constructor() {
+        baseContract = address(this);
+    }
+
+    //Structure of the block
     struct Campaign {
         address owner;
         string title;
@@ -14,10 +23,12 @@ contract digicrowd {
         uint256[] donations;
     }
 
-    mapping(uint256 => Campaign) public campaigns;
+    mapping(uint256 => Campaign) public campaigns; //takes Id of the campaign and returns the details of the campaign
 
+    //When deployed, Initialized to 0
     uint256 public numberOfCampaigns = 0;
 
+    //To create campaign
     function createCampaign(
         address _owner,
         string memory _title,
@@ -47,29 +58,7 @@ contract digicrowd {
         return numberOfCampaigns - 1;
     }
 
-    function donateToCampaign(uint256 _id) public payable {
-        uint256 amount = msg.value;
-
-        Campaign storage campaign = campaigns[_id];
-
-        campaign.donators.push(msg.sender);
-        campaign.donations.push(amount);
-
-        (bool sent, ) = payable(campaign.owner).call{value: amount}("");
-
-        if (sent) {
-            campaign.amountCollected = campaign.amountCollected + amount;
-        }
-    }
-
-    function getDonators(uint256 _id)
-        public
-        view
-        returns (address[] memory, uint256[] memory)
-    {
-        return (campaigns[_id].donators, campaigns[_id].donations);
-    }
-
+    //returns all campaigns
     function getCampaigns() public view returns (Campaign[] memory) {
         Campaign[] memory allCampaigns = new Campaign[](numberOfCampaigns);
 
@@ -80,5 +69,46 @@ contract digicrowd {
         }
 
         return allCampaigns;
+    }
+
+    //returns a specific campaign
+    function getCampaign(uint256 campaignId)
+        public
+        view
+        returns (Campaign memory)
+    {
+        return campaigns[campaignId];
+    }
+
+    // To check balance of an address
+    function balanceOf(address account) public view returns (uint256) {
+        return account.balance;
+    }
+
+    // Contract transfers the funds to fundraiser
+    function donateToCampaign(
+        address _from,
+        uint256 _id,
+        uint256 _amount
+    ) public payable {
+        Campaign storage campaign = campaigns[_id];
+
+        require(baseContract.balance >= _amount, "Transaction failed 106!!!");
+
+        (bool sent, ) = payable(campaign.owner).call{value: _amount}("");
+
+        require(sent, "Transaction failed 110!!!");
+
+        campaign.amountCollected = campaign.amountCollected + _amount;
+        campaign.donators.push(_from);
+        campaign.donations.push(_amount);
+    }
+
+    // Investor transfers to contract
+    event Received(address, uint256);
+
+    function receiveFunds(uint256 _id) external payable {
+        emit Received(msg.sender, msg.value);
+        donateToCampaign(msg.sender, _id, msg.value);
     }
 }
