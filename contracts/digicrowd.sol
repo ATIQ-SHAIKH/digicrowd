@@ -19,7 +19,7 @@ contract digicrowd {
         uint256 target;
         uint256 deadline;
         uint256 amountCollected;
-        string image;
+        string[]  image;
         address[] donators;
         uint256[] donations;
     }
@@ -36,7 +36,7 @@ contract digicrowd {
         string memory _description,
         uint256 _target,
         uint256 _deadline,
-        string memory _image
+        string[] memory _image
     ) public returns (uint256) {
         Campaign storage campaign = campaigns[numberOfCampaigns];
 
@@ -88,28 +88,25 @@ contract digicrowd {
 
     // Contract transfers the funds to fundraiser
     function donateToCampaign(
-        address _from,
-        uint256 _id,
-        uint256 _amount
+        uint256 _id
     ) public payable {
         Campaign storage campaign = campaigns[_id];
-
+        uint256 _amount = msg.value;
         require(baseContract.balance >= _amount, "Transaction failed 106!!!");
 
         (bool sent, ) = payable(campaign.owner).call{value: _amount}("");
 
         require(sent, "Transaction failed 110!!!");
-
+        if(sent){
         campaign.amountCollected = campaign.amountCollected + _amount;
-        campaign.donators.push(_from);
+        campaign.donators.push(msg.sender);
+
         campaign.donations.push(_amount);
+        }
     }
 
     // Investor transfers to contract
     event Received(address, uint256);
 
-    function receiveFunds(uint256 _id) external payable {
-        emit Received(msg.sender, msg.value);
-        donateToCampaign(msg.sender, _id, msg.value);
-    }
+
 }
