@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@thirdweb-dev/contracts": "^3",
-    "dotenv": "^16.0.3"
+    "Hardhat": "npm:hardhat@^2.12.6",
+    "dotenv": "^16.0.3",
+    "react-type-animation": "^2.1.2"
   }
 }
