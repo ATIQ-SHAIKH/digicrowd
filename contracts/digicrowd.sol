@@ -22,6 +22,7 @@ contract digicrowd {
         string[]  image;
         address[] donators;
         uint256[] donations;
+        ERC20  token;
     }
 
     mapping(uint256 => Campaign) public campaigns; //takes Id of the campaign and returns the details of the campaign
@@ -36,7 +37,8 @@ contract digicrowd {
         string memory _description,
         uint256 _target,
         uint256 _deadline,
-        string[] memory _image
+        string[] memory _image,
+        ERC20 _token
     ) public returns (uint256) {
         Campaign storage campaign = campaigns[numberOfCampaigns];
 
@@ -53,7 +55,7 @@ contract digicrowd {
         campaign.deadline = _deadline;
         campaign.amountCollected = 0;
         campaign.image = _image;
-
+        campaign.token = _token;
         numberOfCampaigns++;
 
         return numberOfCampaigns - 1;
@@ -108,5 +110,15 @@ contract digicrowd {
     // Investor transfers to contract
     event Received(address, uint256);
 
+    function transferERC20(uint256 _id,address from, uint256 amount) public {
+        // require(msg.sender === owner, "Only owner can withdraw funds");
+        uint256 erc20balance = campaign.token.balanceOf(address(this));
+        require(amount <= erc20balance, "balance is low");
+        campaign.token.transfer(to, amount);
+        emit TransferSent(from, to, amount);
+        campaign.amountCollected = campaign.amountCollected + amount;
+        campaign.donators.push(from);
 
+        campaign.donations.push(amount);
+    }
 }
