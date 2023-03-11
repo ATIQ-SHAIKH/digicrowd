@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.9;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 //This contract deals with transfer of eth coins and not tokens!!!
 contract digicrowd {
@@ -22,7 +23,7 @@ contract digicrowd {
         string[]  image;
         address[] donators;
         uint256[] donations;
-        ERC20  token;
+        string  token;
     }
 
     mapping(uint256 => Campaign) public campaigns; //takes Id of the campaign and returns the details of the campaign
@@ -38,7 +39,7 @@ contract digicrowd {
         uint256 _target,
         uint256 _deadline,
         string[] memory _image,
-        ERC20 _token
+        string memory _token
     ) public returns (uint256) {
         Campaign storage campaign = campaigns[numberOfCampaigns];
 
@@ -110,12 +111,16 @@ contract digicrowd {
     // Investor transfers to contract
     event Received(address, uint256);
 
-    function transferERC20(uint256 _id,address from, uint256 amount) public {
+    event TransferSent( address from, address to, uint256 amount);
+
+    function transferERC20(ERC20 token,uint256 _id,address from, uint256 amount) public {
+         Campaign storage campaign = campaigns[_id];
+
         // require(msg.sender === owner, "Only owner can withdraw funds");
-        uint256 erc20balance = campaign.token.balanceOf(address(this));
+        uint256 erc20balance = token.balanceOf(address(this));
         require(amount <= erc20balance, "balance is low");
-        campaign.token.transfer(to, amount);
-        emit TransferSent(from, to, amount);
+        token.transfer(campaign.owner, amount);
+        emit TransferSent(from, campaign.owner, amount);
         campaign.amountCollected = campaign.amountCollected + amount;
         campaign.donators.push(from);
 

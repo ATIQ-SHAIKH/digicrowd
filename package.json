@@ -9,9 +9,10 @@
     "hardhat": "^2.10.1"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.8.2",
     "@thirdweb-dev/contracts": "^3",
-    "Hardhat": "npm:hardhat@^2.12.6",
     "dotenv": "^16.0.3",
+    "Hardhat": "npm:hardhat@^2.12.6",
     "react-type-animation": "^2.1.2"
   }
 }
